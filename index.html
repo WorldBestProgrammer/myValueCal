@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>나의 가치 계산기</title>
+  </head>
+  <body>
+
+    <form method="post" action="./result">
+      
+      <center> 
+        <h1 style="font-size:100px; line-height: 25%;">가치계산기</h1>
+        <script type="text/javascript">
+          //보이기
+          function div_show() {
+           document.getElementById("test_div").style.display = "block";
+          }
+          
+          //숨기기
+          function div_hide() {
+           document.getElementById("test_div").style.display = "none";
+          }
+         </script>
+          <div id="test_div">
+            <p style="font-size:20px; line-height: 150%;">
+            가치 계산기는 공부량을 바탕으로 당신의 월급 가치를 계산합니다. <br>
+            당신이 하루동안 공부한 양을 입력하시면 월급 가치가 계산되어 나타날 것입니다. <br>
+            <span style="color:red">하루라도 공부를 하지 않으면 가치는 떨어지니 주의하십시오.</span>
+          </p>
+        </div>
+          
+          <input type="button" value="보이기" onclick="div_show();"/>
+          <input type="button" value="숨기기" onclick="div_hide();"/>
+        <h3 style="font-size:50px; line-height: 50%;">공부한 시간 입력</h3>
+      <div style="font-size: 50px; line-height: 10%;">
+      <input type="number" name="hour" max="24" min="0" style="text-align: center; width:80px;height:50px;font-size:50px; line-height: 10%;"> 
+        시간
+      </div>
+      <br>
+      <br>
+      <input type="submit" value="계산하기" name="submit"> </center>
+      
+  
+    </form>
+  </body>
+</html>
