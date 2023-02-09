@@ -7,10 +7,12 @@ var authRouter = require('./lib_login/auth');
 var authCheck = require('./lib_login/authCheck.js');
 var template = require('./lib_login/template.js');
 var fs = require('fs');
+const db = require('./lib_login/db');
 var array;
 var prevtotal;
 var newtotal;
 var nickname;
+var username;
 
 const app = express()
 const port = 3000
@@ -28,13 +30,34 @@ function calTot(tot, time, recent) {
   return tot;
     }
 
+// calTot_prev는 가치를 입력하기 전 보여주는 현재 가치를 계산하는 함수
+function calTot_prev(tot, time, recent) {			
+  var now = new Date().getTime();
+  let gap = parseInt((now - recent) / (24 * 3600 * 1000)) - 1;
+  // 오늘 연달아서 입력한 경우 gap이 -1이 되는데 그것은 우리가 원하는 것이 아니기에 0으로 바꿔준다.
+  if (gap < 0){
+      gap = 0
+  }
+  //console.log(tot, time, now, recent, gap);
+  var tot = parseInt(tot - gap);
+  
+  return tot;
+    }
+
+// calTot_cur은 가치를 입력한 후 보여주는 진짜 현재 가치를 계산하는 함수
+function calTot_cur(tot, time) {			
+  //console.log(tot, time, now, recent, gap);
+  var tot = parseInt(tot + time);
+
+  return tot;
+    }
+
 function mkdir( dirPath ) {
   const isExists = fs.existsSync( dirPath );
   if( !isExists ) {
       fs.mkdirSync( dirPath, { recursive: true } );
   }
 } 
-
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({
@@ -73,7 +96,7 @@ app.get('/main', (req, res) => {
   res.send(html);
   */
   nickname=req.session.nickname
- 
+
   if(req.method == 'GET'){
     fs.readFile('./index.html' ,'utf8' ,function(error, data) {
         res.writeHead(200, {'Content-Type' : 'text/html'});
@@ -86,35 +109,25 @@ app.get('/main', (req, res) => {
 })
 
 app.post('/result', (req, res) => {
-  console.log("HI");
-      mkdir(nickname);
-      let exist = fs.existsSync("./" + nickname + "/data.txt");
-
-      if (!exist){
-          console.log(exist);
-          fs.writeFileSync("./" + nickname + "/data.txt", '\n', 'utf8');
-      }
-
-      array = fs.readFileSync("./" + nickname + "/data.txt").toString().split("\n")
-      console.log("input");
-      for(i in array){
-        console.log(array[i])
-      }
-
-      if (array[0] == ""){
-          
-          console.log("NULL");
-          prevtotal = 0;
-          var today = new Date();
-          recent = new Date(today.setDate(today.getDate() - 1)).getTime();
-      }
-      else{
-          prevtotal = parseInt(array[0]);
-          var recent = array[1];
-      }
-
       
-      var studytime = parseInt(req.body.hour);
+  db.query('SELECT curVal, recent FROM userTable WHERE username = ?', [nickname], function(error, results, fields) { // DB에 같은 이름의 회원아이디가 있는지 확인
+    if (error) throw error;
+    
+    if (results[0].recent == 0){
+    console.log("first try!"); 
+    var today = new Date();
+    recent = new Date(today.setDate(today.getDate() - 1)).getTime();
+    db.query("update userTable set recent = ? where username = ?", [recent, nickname], function(error, results, fields) {
+      if (error) throw error;
+      console.log("update recent", recent);
+    })
+    }
+    else {
+      recent = results[0].recent;
+    }
+    prevtotal = results[0].curVal;
+
+    var studytime = parseInt(req.body.hour);
       //console.log(prevtotal, studytime, recent);
       console.log("studytime", studytime);
       newtotal = calTot(prevtotal, studytime, recent);
@@ -122,13 +135,14 @@ app.post('/result', (req, res) => {
       res.end('당신의 가치는 ' + newtotal + "입니다.");
       
       var today = new Date().getTime();
-      var wdata = newtotal + '\n' + today;
+      
+      db.query("update userTable set curVal = ?, recent = ? where username = ?", [newtotal, today, nickname], function(error, results, fields) {
+        if (error) throw error;
+        console.log("update complete!", newtotal, today);
+      })
 
-      fs.writeFile("./" + nickname + "/data.txt", wdata, 'utf8', function(err) {
-          console.log("output");
-          console.log(wdata);
-  });
-  });
+});
+});
     
     
 
