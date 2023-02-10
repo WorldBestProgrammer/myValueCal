@@ -12,7 +12,6 @@ var array;
 var prevtotal;
 var newtotal;
 var nickname;
-var username;
 
 const app = express()
 const port = 3000
@@ -31,7 +30,7 @@ function calTot(tot, time, recent) {
     }
 
 // calTot_prev는 가치를 입력하기 전 보여주는 현재 가치를 계산하는 함수
-function calTot_prev(tot, time, recent) {			
+function calTot_prev(tot, recent) {			
   var now = new Date().getTime();
   let gap = parseInt((now - recent) / (24 * 3600 * 1000)) - 1;
   // 오늘 연달아서 입력한 경우 gap이 -1이 되는데 그것은 우리가 원하는 것이 아니기에 0으로 바꿔준다.
@@ -80,6 +79,9 @@ app.get('/', (req, res) => {
 // 인증 라우터
 app.use('/auth', authRouter);
 
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+
 // 메인 페이지
 app.get('/main', (req, res) => {
   if (!authCheck.isOwner(req, res)) {  // 로그인 안되어있으면 로그인 페이지로 이동시킴
@@ -96,14 +98,45 @@ app.get('/main', (req, res) => {
   res.send(html);
   */
   nickname=req.session.nickname
+  db.query('SELECT curVal, recent FROM userTable WHERE username = ?', [nickname], function(error, results, fields) { // DB에 같은 이름의 회원아이디가 있는지 확인
+    if (error) throw error;
+    
+    if (results[0].recent == 0){
+    console.log("first try!"); 
+    var today = new Date();
+    recent = new Date(today.setDate(today.getDate() - 1)).getTime();
+    db.query("update userTable set recent = ? where username = ?", [recent, nickname], function(error, results, fields) {
+      if (error) throw error;
+      console.log("update recent", recent);
+    })
+    }
+    else {
+      recent = results[0].recent;
+    }
+    prevtotal = results[0].curVal;
 
-  if(req.method == 'GET'){
-    fs.readFile('./index.html' ,'utf8' ,function(error, data) {
-        res.writeHead(200, {'Content-Type' : 'text/html'});
-        res.end(data);
-    });
-}
+      newtotal = calTot_prev(prevtotal, recent);
+      
+      db.query("update userTable set curVal = ? where username = ?", [newtotal, nickname], function(error, results, fields) {
+        if (error) throw error;
+        console.log("update prev complete!", newtotal);
+      })
+
+      res.render('index.ejs', {'curVal' : newtotal}, function(err, html){
+        if (err) throw err;
+        res.send(html);
+      })
+
+});
   
+  
+
+  /*
+  fs.readFile('./index.html' ,'utf8' ,function(error, data) {
+      res.writeHead(200, {'Content-Type' : 'text/html'});
+      res.end(data);
+  });
+  */
 
 
 })
@@ -130,24 +163,26 @@ app.post('/result', (req, res) => {
     var studytime = parseInt(req.body.hour);
       //console.log(prevtotal, studytime, recent);
       console.log("studytime", studytime);
-      newtotal = calTot(prevtotal, studytime, recent);
-      res.writeHead(200, {'Content-Type' : 'text/html;charset=UTF-8'});
-      res.end('당신의 가치는 ' + newtotal + "입니다.");
+      newtotal = calTot_cur(prevtotal, studytime);
       
+      res.render('result.ejs', {'curVal' : newtotal}, function(err, html){
+        if (err) throw err;
+        res.send(html);
+      })
+
+      //res.writeHead(200, {'Content-Type' : 'text/html;charset=UTF-8'});
+      //res.end('<div id="wrap"> <div class="center"> <h1 style="font-size=50px">당신의 가치는 ' + '<span style="color:red">' + newtotal + '</span>' + "입니다.</h1></div></div>");
       var today = new Date().getTime();
       
       db.query("update userTable set curVal = ?, recent = ? where username = ?", [newtotal, today, nickname], function(error, results, fields) {
         if (error) throw error;
-        console.log("update complete!", newtotal, today);
+        console.log("update all complete!", newtotal, today);
       })
 
 });
 });
     
     
-
-  
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
