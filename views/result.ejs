@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>나의 가치 계산기</title>
-    
-    <style>
-      body {
+<head>
+  
+<style>
+  body {
       margin: 0;
     }
     
@@ -13,19 +10,98 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100px;
     }
     
     .item {
-      padding: 50px;
+      padding: 20px;
       font-weight: 900;
-      font-size: 80px;
+      font-size: 40px;
     }
-    </style>
-  </head>
-  <body>
-    <div class="wrapper">
-      <div class="item">당신의 월급 가치는 <span style="color:red"><%=curVal%></span> 만원입니다</div>
+  /* statistics start */
+.graph{
+  background-color:#ccc;
+  height: 100vh;
+  border-radius: 40px;
+  margin:50px;
+}
+/*
+@keyframes stack{
+  0%{ height: 0; opacity:0;}
+  100%{ height: 55%; opacity:1;}
+}
+@keyframes stack2{
+  0%{ height: 0; opacity:0;}
+  100%{ height: 60%; opacity:1;}
+}
+@keyframes stack3{
+  0%{ height: 0; opacity:0;}
+  100%{ height: 25%; opacity:1;}
+}
+*/
+section{
+  display:flex;  
+/*   flex-direction:column;   */
+  justify-content:center;
+  border: 2px solid red;
+  height: 500px;
+  transform:rotate(180deg);
+}
+
+.graph {
+  height:400px;
+}
+
+.graph span{
+  display:flex;
+  height:40px;
+  line-height:40px;
+  text-align:right;
+  /*   width: 75%; */
+  /*   background-color:pink; */
+  border-radius: 40px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  color:white;
+  transform:rotate(180deg);
+  
+}
+.graph.stack1 span{
+  background-color:violet;
+  height:80px;
+  animation:stack 2s 1;
+}
+.graph.stack2 span{
+  background-color:violet;
+  height:50px;
+  animation:stack2 2s 1;
+}
+.graph.stack3 span{
+  background-color:violet;
+  height:40px;
+  animation:stack3 2s 1;
+}
+/* statistics end */
+
+
+</style>
+</head>
+<body>
+  
+    <center> <div class="item">당신의 월급 가치는 <span style="color:red"><%=curVal%></span> 만원입니다
+      <br>
+    당신의 연령대(<%=old%>대)의 평균 월급은 <span style="color:red"><%=pay%></span> 만원입니다
+    </div></center>
+
+  <section>
+    <div class="graph stack1">
+      <span><%=curVal%></span>    
     </div>
-  </body>
-</html>
+    <div class="graph stack2">
+      <span><%=curVal2%></span>    
+    </div>
+    <div class="graph stack3">
+      <span><%=curVal3%></span>    
+    </div>
+  </section>
+</body>
