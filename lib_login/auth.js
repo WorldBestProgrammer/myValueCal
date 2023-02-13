@@ -81,7 +81,7 @@ router.post('/register_process', function(request, response) {
             if (error) throw error;
             if (results.length <= 0 && password == password2) {     // DB에 같은 이름의 회원아이디가 없고, 비밀번호가 올바르게 입력된 경우 
                 db.query('INSERT INTO usertable (username, password) VALUES(?,?)', [username, password], function (error, data) {
-                    if (error) throw error2;
+                    if (error) throw error;
                     response.send(`<script type="text/javascript">alert("회원가입이 완료되었습니다!");
                     document.location.href="/";</script>`);
                 });
