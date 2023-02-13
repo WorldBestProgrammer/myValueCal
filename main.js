@@ -113,7 +113,7 @@ app.get('/main', (req, res) => {
   nickname=req.session.nickname
   db.query('SELECT curVal, recent FROM userTable WHERE username = ?', [nickname], function(error, results, fields) { // DB에 같은 이름의 회원아이디가 있는지 확인
     if (error) throw error;
-    
+    console.log("recent", nickname, results[0].recent);
     if (results[0].recent == 0){
     console.log("first try!"); 
     var today = new Date();

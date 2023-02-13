@@ -83,7 +83,7 @@ router.post('/register_process', function(request, response) {
                 db.query('INSERT INTO usertable (username, password) VALUES(?,?)', [username, password], function (error, data) {
                     if (error) throw error;
                     response.send(`<script type="text/javascript">alert("회원가입이 완료되었습니다!");
-                    document.location.href="/";</script>`);
+                    document.location.href="/auth/login";</script>`);
                 });
             } else if (password != password2) {                     // 비밀번호가 올바르게 입력되지 않은 경우
                 response.send(`<script type="text/javascript">alert("입력된 비밀번호가 서로 다릅니다."); 
